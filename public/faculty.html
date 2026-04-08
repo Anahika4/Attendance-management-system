@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Faculty Dashboard</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+<h1>Faculty Dashboard</h1>
+
+<button class="logout-btn" onclick="logout()">Logout</button>
+
+<h2 style="text-align:center;">Select Subject</h2>
+<div id="subjects" style="text-align:center; margin-bottom:30px;"></div>
+
+<h2 style="text-align:left; margin-left:10%;">Students</h2>
+<div id="students"></div>
+
+<script>
+
+async function loadSubjects() {
+  const res = await fetch('/subjects');
+  const subjects = await res.json();
+
+  const container = document.getElementById('subjects');
+  container.innerHTML = '';
+
+  subjects.forEach(sub => {
+    const btn = document.createElement('button');
+    btn.innerText = sub.name;
+    btn.className = 'subject-btn';
+
+    btn.onclick = () => loadStudents(sub.id);
+
+    container.appendChild(btn);
+  });
+}
+
+async function loadStudents(subjectId) {
+  const res = await fetch('/students');
+  const students = await res.json();
+
+  let html = `
+    <table>
+      <tr>
+        <th>Name</th>
+        <th>Mark Attendance</th>
+      </tr>
+  `;
+
+  students.forEach(s => {
+    html += `
+      <tr>
+        <td>${s.name}</td>
+        <td>
+          <button onclick="mark('${s.id}', ${subjectId}, 'Present')" style="background:green;color:white;">Present</button>
+          <button onclick="mark('${s.id}', ${subjectId}, 'Absent')" style="background:red;color:white;">Absent</button>
+        </td>
+      </tr>
+    `;
+  });
+
+  html += `</table>`;
+
+  document.getElementById('students').innerHTML = html;
+}
+
+
+async function mark(studentId, subjectId, status) {
+  await fetch('/attendance', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      student_id: studentId,
+      subject_id: subjectId,
+      date: new Date().toISOString().split('T')[0],
+      status: status
+    })
+  });
+
+  alert('Attendance marked');
+}
+
+function logout() {
+  window.location.href = "/";
+}
+
+loadSubjects();
+</script>
+
+</body>
+</html>

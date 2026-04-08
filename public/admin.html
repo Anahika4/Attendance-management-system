@@ -1,0 +1,152 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Admin Dashboard</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+<h1>Admin Dashboard</h1>
+
+<button class="logout-btn" onclick="logout()">Logout</button>
+
+<h2>Add Student</h2>
+
+<input id="id" placeholder="ID">
+<input id="name" placeholder="Name">
+<input id="email" placeholder="Email">
+<input id="dept" placeholder="Department">
+<input id="year" placeholder="Year">
+<input id="gender" placeholder="Gender">
+
+<button onclick="addStudent()">Add Student</button>
+
+<h2>Add Faculty</h2>
+
+<input id="femail" placeholder="Faculty Email">
+<input id="fpass" placeholder="Password">
+
+<button onclick="addFaculty()">Add Faculty</button>
+
+
+<!-- ================= REMOVE USER ================= -->
+<h2>Remove User</h2>
+
+<input id="remail" placeholder="Enter Email">
+<button onclick="removeUser()">Remove</button>
+
+
+<h2>Students List</h2>
+<div id="studentsTable"></div>
+
+
+<script>
+
+function loadStudents() {
+  fetch("/students")
+    .then(res => res.json())
+    .then(data => {
+      let html = `
+        <table>
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Dept</th>
+            <th>Year</th>
+            <th>Gender</th>
+          </tr>
+      `;
+
+      data.forEach(s => {
+        html += `
+          <tr>
+            <td>${s.id}</td>
+            <td>${s.name}</td>
+            <td>${s.email}</td>
+            <td>${s.department}</td>
+            <td>${s.year}</td>
+            <td>${s.gender}</td>
+          </tr>
+        `;
+      });
+
+      html += `</table>`;
+
+      document.getElementById("studentsTable").innerHTML = html;
+    });
+}
+
+function addStudent() {
+  fetch("/students", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({
+      id: document.getElementById("id").value,
+      name: document.getElementById("name").value,
+      email: document.getElementById("email").value,
+      department: document.getElementById("dept").value,
+      year: document.getElementById("year").value,
+      gender: document.getElementById("gender").value
+    })
+  })
+  .then(res => res.json())
+  .then(() => {
+    alert("Student added ✅");
+
+    document.getElementById("id").value = "";
+    document.getElementById("name").value = "";
+    document.getElementById("email").value = "";
+    document.getElementById("dept").value = "";
+    document.getElementById("year").value = "";
+    document.getElementById("gender").value = "";
+
+    loadStudents();
+  });
+}
+
+function addFaculty() {
+  fetch("/auth/add-faculty", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({
+      email: document.getElementById("femail").value,
+      password: document.getElementById("fpass").value
+    })
+  })
+  .then(res => res.json())
+  .then(data => {
+    alert(data.message || data.error);
+
+    document.getElementById("femail").value = "";
+    document.getElementById("fpass").value = "";
+  });
+}
+
+function removeUser() {
+  fetch("/auth/remove-user", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({
+      email: document.getElementById("remail").value
+    })
+  })
+  .then(res => res.json())
+  .then(data => {
+    alert(data.message || data.error);
+
+    document.getElementById("remail").value = "";
+  });
+}
+
+function logout() {
+  window.location.href = "/";
+}
+
+loadStudents();
+</script>
+
+</body>
+</html>
+```
